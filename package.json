@@ -1,0 +1,17 @@
+{
+	"name": "k-cli",
+	"version": "1.0.0",
+	"main": "src/index.js",
+	"bin": {
+		"@kly/cli": "bin/create",
+		"k-cli": "bin/create"
+	},
+	"license": "MIT",
+	"dependencies": {
+		"arg": "^4.1.3",
+		"chalk": "^4.1.0",
+		"esm": "^3.2.25",
+		"inquirer": "^7.3.3",
+		"ncp": "^2.0.0"
+	}
+}
