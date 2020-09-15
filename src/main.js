@@ -1,8 +1,12 @@
-import chalk from 'chalk'
 import fs from 'fs'
-import ncp from 'ncp'
 import path from 'path'
 import { promisify } from 'util'
+import chalk from 'chalk'
+import ncp from 'ncp'
+import execa from 'execa'
+import Listr from 'listr'
+import { projectInstall } from 'pkg-install'
+
 
 
 const access = promisify(fs.access)
@@ -13,6 +17,17 @@ const copyTemplateFile = async (options) => {
     return copy(options.tempDir, options.targetDir, {
         clobber:false
     })
+}
+
+const initGit = async (options) => {
+    const result = execa('git', ['init'], {
+        cwd:options.targetDir
+    })
+
+    if(result.failed){
+        return Promise.reject(new Error('init git 失败'))
+    }
+    return
 }
 
 
@@ -39,10 +54,30 @@ export const createProject = async (options) => {
         process.exit(1)
     }
 
-    console.log('复制文件中...')
+    // console.log('复制文件中...')
 
-    await copyTemplateFile(options)
+    // await copyTemplateFile(options)
 
+    const tasks = new Listr([
+        {
+            title:"复制文件",
+            task:() => copyTemplateFile(options)
+        },
+        {
+            title:"init git",
+            task: () => initGit(options),
+            enabled: () => options.git
+        },
+        {
+            title:"安装依赖",
+            task:() => projectInstall({
+                cwd:options.targetDir
+            }),
+            skip:() => !options.runInstall ? "输入 --install 安装依赖" : undefined
+        }
+    ])
+
+    await tasks.run()
     console.error("%s 项目创建成功", chalk.green.bold('DONE'))
     return true
 }
