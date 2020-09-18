@@ -13,14 +13,14 @@ const access = promisify(fs.access)
 
 const copy = promisify(ncp)
 
-const copyTemplateFile = async (options) => {
+const copyTemplateFile = async (options:any) => {
     return copy(options.tempDir, options.targetDir, {
         clobber:false
     })
 }
 
-const initGit = async (options) => {
-    const result = execa('git', ['init'], {
+const initGit = async (options:any) => {
+    const result:any = execa('git', ['init'], {
         cwd:options.targetDir
     })
 
@@ -31,14 +31,15 @@ const initGit = async (options) => {
 }
 
 
-export const createProject = async (options) => {
+export const createProject = async (options:any) => {
     options = {
         ...options,
         targetDir:options.targetDir || process.cwd(),
     }
 
+    //@ts-ignore
     const currentFileUrl = import.meta.url
-    console.log(currentFileUrl);
+
     const tempDir = path.resolve(
         new URL(currentFileUrl).pathname.slice(1),
         '../../templates',

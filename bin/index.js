@@ -2,4 +2,4 @@
 
 require = require('esm')(module /*, options */)
 
-require('../src/cli.js').cli(process.argv) 
+require('../src/index.js').cli(process.argv) 

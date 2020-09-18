@@ -1,10 +1,10 @@
 {
 	"name": "k-cli",
-	"version": "1.0.0",
+	"version": "0.0.1",
 	"main": "src/index.js",
 	"bin": {
-		"@kly/cli": "bin/create",
-		"k-cli": "bin/create"
+		"@kly/cli": "bin/index.js",
+		"k-cli": "bin/index.js"
 	},
 	"license": "MIT",
 	"dependencies": {
@@ -16,5 +16,11 @@
 		"listr": "^0.14.3",
 		"ncp": "^2.0.0",
 		"pkg-install": "^1.0.0"
+	},
+	"devDependencies": {
+		"@types/inquirer": "^7.3.1",
+		"@types/listr": "^0.14.2",
+		"@types/ncp": "^2.0.4",
+		"@types/node": "^14.11.1"
 	}
 }
