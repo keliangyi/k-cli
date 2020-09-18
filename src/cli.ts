@@ -68,17 +68,17 @@ export default class Cli {
     
     help () {
         console.log(chalk.cyan`
-            Version  ${this.version}
-            Syntax   k-cli <name> [...options]
-            Examples k-cli 
-                     k-cli my-app -t
-                     k-cli -n my-app -t
-            Options:
-                -h, --help                      帮助，打印出这一段信息
-                -v, --version                   版本号
-                -n, --name                      项目的名称
-                -t, --typescript                是否使用typescript
-                -g, --git                       git init
+        Version  ${this.version}
+        Syntax   k-cli <name> [...options]
+        Examples k-cli 
+                    k-cli my-app -t
+                    k-cli -n my-app -t
+        Options:
+            -h, --help                      帮助，打印出这一段信息
+            -v, --version                   版本号
+            -n, --name                      项目的名称
+            -t, --typescript                是否使用typescript
+            -g, --git                       git init
         `)
         process.exit(1)
     }
