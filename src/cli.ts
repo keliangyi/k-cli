@@ -1,16 +1,21 @@
+
 import arg from 'arg'
 import chalk from 'chalk'
 import inquirer from 'inquirer'
+import fs from 'fs'
+import { join } from 'path'
 
 interface Ioptions {
     name:string
-    help:Boolean
-    version:Boolean
+    help:boolean
+    version:boolean
     git:boolean
     typescript:boolean
+    template ?:string
 }
 
-export default class Cli { 
+
+class Cli { 
 
     options!: Ioptions 
     version : string
@@ -20,7 +25,7 @@ export default class Cli {
         '--help':Boolean,
         '--version':Boolean,
         '--git':Boolean,
-        '--typescript':Boolean,    
+        '--typescript':Boolean,        
 
         '-n':'--name',
         '-v':'--version',
@@ -45,22 +50,7 @@ export default class Cli {
         }
     }
 
-    async promptOptions () {
-        const questions:inquirer.QuestionCollection<any>[] = []
-        if(!this.options.name){
-            questions.push({
-                type:'input',
-                name:"name",
-                message:"请输入项目的名称",            
-            })
-        }
-        const answers = await inquirer.prompt(questions)   
-        this.options = {
-            ...this.options,
-            name:this.options.name ?? answers.name
-        }
-    }
-
+    
     showVersion () {
         console.log(chalk`Version： {bold.green ${this.version} } `)
         process.exit(1)
@@ -82,4 +72,39 @@ export default class Cli {
         `)
         process.exit(1)
     }
+
+    async promptOptions () {
+        const questions = this.setQuestions()
+        const answers:Ioptions = await inquirer.prompt(questions)    
+        this.options = {
+            ...this.options,
+            name:this.options.name ?? answers.name,
+            template:answers.template
+        }
+    }
+
+    setQuestions ():inquirer.QuestionCollection<any>[]  {
+        const questions:inquirer.QuestionCollection<any>[] = []
+        if(!this.options.name){
+            questions.push({
+                type:'input',
+                name:"name",
+                message:"请输入项目的名称",            
+            })
+        }        
+        const templates =  fs.readdirSync(join(process.cwd(),'templates')) 
+        questions.push({
+            name:"template",
+            type:'rawlist',
+            choices:templates
+        })
+        return questions
+    }
+
+    createProject () {
+          
+    }
+
 }
+
+export default Cli

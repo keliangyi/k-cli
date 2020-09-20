@@ -11,7 +11,7 @@ export const cli = async(args:string[]) => {
         c.help()
     }
     
-    c.promptOptions()
+    await c.promptOptions()
 
     console.log(c);    
 }

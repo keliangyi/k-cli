@@ -1,9 +1,0 @@
-{
-	"name": "javascript-template",
-	"version": "1.0.0",
-	
-	"license": "MIT",
-	"dependencies": {
-		"esm": "^3.2.25"
-	}
-}

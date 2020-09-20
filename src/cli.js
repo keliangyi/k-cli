@@ -22,6 +22,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const arg_1 = __importDefault(require("arg"));
 const chalk_1 = __importDefault(require("chalk"));
 const inquirer_1 = __importDefault(require("inquirer"));
+const fs_1 = __importDefault(require("fs"));
+const path_1 = require("path");
 class Cli {
     constructor(args) {
         _argv.set(this, {
@@ -50,21 +52,6 @@ class Cli {
             git: (_e = args["--git"]) !== null && _e !== void 0 ? _e : false,
         };
     }
-    promptOptions() {
-        var _a;
-        return __awaiter(this, void 0, void 0, function* () {
-            const questions = [];
-            if (!this.options.name) {
-                questions.push({
-                    type: 'input',
-                    name: "name",
-                    message: "请输入项目的名称",
-                });
-            }
-            const answers = yield inquirer_1.default.prompt(questions);
-            this.options = Object.assign(Object.assign({}, this.options), { name: (_a = this.options.name) !== null && _a !== void 0 ? _a : answers.name });
-        });
-    }
     showVersion() {
         console.log(chalk_1.default `Version： {bold.green ${this.version} } `);
         process.exit(1);
@@ -85,6 +72,31 @@ class Cli {
         `);
         process.exit(1);
     }
+    promptOptions() {
+        var _a;
+        return __awaiter(this, void 0, void 0, function* () {
+            const questions = this.setQuestions();
+            const answers = yield inquirer_1.default.prompt(questions);
+            this.options = Object.assign(Object.assign({}, this.options), { name: (_a = this.options.name) !== null && _a !== void 0 ? _a : answers.name, template: answers.template });
+        });
+    }
+    setQuestions() {
+        const questions = [];
+        if (!this.options.name) {
+            questions.push({
+                type: 'input',
+                name: "name",
+                message: "请输入项目的名称",
+            });
+        }
+        const templates = fs_1.default.readdirSync(path_1.join(process.cwd(), 'templates'));
+        questions.push({
+            name: "template",
+            type: 'rawlist',
+            choices: templates
+        });
+        return questions;
+    }
 }
-exports.default = Cli;
 _argv = new WeakMap();
+exports.default = Cli;
