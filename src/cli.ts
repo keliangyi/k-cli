@@ -2,8 +2,10 @@
 import arg from 'arg'
 import chalk from 'chalk'
 import inquirer from 'inquirer'
+import Listr from 'listr'
 import fs from 'fs'
 import { join } from 'path'
+import { promisify } from 'util'
 
 interface Ioptions {
     name:string
@@ -14,6 +16,8 @@ interface Ioptions {
     template ?:string
 }
 
+const access = promisify(fs.access)
+const copyFile = promisify(fs.copyFile)
 
 class Cli { 
 
@@ -33,6 +37,8 @@ class Cli {
         '-g':'--git',
         '-t':'--typescript'
     }
+    //@ts-ignore
+    #templatesPath = join(new URL(import.meta.url).pathname.slice(1),'../../templates')
 
     constructor(args:string[]){
         this.version = require('../package.json').version
@@ -85,24 +91,53 @@ class Cli {
 
     setQuestions ():inquirer.QuestionCollection<any>[]  {
         const questions:inquirer.QuestionCollection<any>[] = []
+
         if(!this.options.name){
             questions.push({
                 type:'input',
                 name:"name",
-                message:"请输入项目的名称",            
+                message:"请输入项目的名称:",            
             })
-        }        
-        const templates =  fs.readdirSync(join(process.cwd(),'templates')) 
-        questions.push({
-            name:"template",
+        }     
+       
+        const templates = fs.readdirSync(this.#templatesPath) 
+        
+        questions.push({           
             type:'rawlist',
+            name:"template",
+            message:"请选择模板:",
             choices:templates
         })
+
+        if(!this.options.git){
+            questions.push({
+                type:'confirm',
+                name:"git",
+                message:"是否初始化git:",            
+            })
+        }        
+
         return questions
     }
 
-    createProject () {
-          
+    async createProject () {
+        const templateDir = join(this.#templatesPath,this.options.template as string) 
+        try {
+            await access(templateDir,fs.constants.R_OK)
+        } catch (error) {
+            console.error(error,"%s 无效的templae 名称", chalk.red.bold('ERROR'))
+            process.exit(1)
+        }   
+        const tasks = new Listr([
+            {
+                title:"复制模板文件",
+                task:() => this.copyTemplateFile(templateDir)
+            },
+        ])            
+    }
+
+    copyTemplateFile (templateDir:string) {
+        return copyFile(templateDir,process.cwd(),)
     }
 
 }

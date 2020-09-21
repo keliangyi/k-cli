@@ -17,13 +17,17 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _argv;
+var _argv, _templatesPath;
 Object.defineProperty(exports, "__esModule", { value: true });
 const arg_1 = __importDefault(require("arg"));
 const chalk_1 = __importDefault(require("chalk"));
 const inquirer_1 = __importDefault(require("inquirer"));
+const listr_1 = __importDefault(require("listr"));
 const fs_1 = __importDefault(require("fs"));
 const path_1 = require("path");
+const util_1 = require("util");
+const access = util_1.promisify(fs_1.default.access);
+const copyFile = util_1.promisify(fs_1.default.copyFile);
 class Cli {
     constructor(args) {
         _argv.set(this, {
@@ -37,7 +41,11 @@ class Cli {
             '-h': '--help',
             '-g': '--git',
             '-t': '--typescript'
-        });
+        }
+        //@ts-ignore
+        );
+        //@ts-ignore
+        _templatesPath.set(this, path_1.join(new URL(import.meta.url).pathname.slice(1), '../../templates'));
         this.version = require('../package.json').version;
         this.parseArgsIntoOptions(args);
     }
@@ -86,17 +94,46 @@ class Cli {
             questions.push({
                 type: 'input',
                 name: "name",
-                message: "请输入项目的名称",
+                message: "请输入项目的名称:",
             });
         }
-        const templates = fs_1.default.readdirSync(path_1.join(process.cwd(), 'templates'));
+        const templates = fs_1.default.readdirSync(__classPrivateFieldGet(this, _templatesPath));
         questions.push({
-            name: "template",
             type: 'rawlist',
+            name: "template",
+            message: "请选择模板:",
             choices: templates
         });
+        if (!this.options.git) {
+            questions.push({
+                type: 'confirm',
+                name: "git",
+                message: "是否初始化git:",
+            });
+        }
         return questions;
     }
+    createProject() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const templateDir = path_1.join(__classPrivateFieldGet(this, _templatesPath), this.options.template);
+            try {
+                yield access(templateDir, fs_1.default.constants.R_OK);
+            }
+            catch (error) {
+                console.error(error, "%s 无效的templae 名称", chalk_1.default.red.bold('ERROR'));
+                process.exit(1);
+            }
+            const tasks = new listr_1.default([
+                {
+                    title: "复制模板文件",
+                    task: () => this.copyTemplateFile(templateDir)
+                },
+            ]);
+        });
+    }
+    copyTemplateFile(templateDir) {
+        return copyFile(templateDir, process.cwd());
+    }
 }
-_argv = new WeakMap();
+_argv = new WeakMap(), _templatesPath = new WeakMap();
 exports.default = Cli;

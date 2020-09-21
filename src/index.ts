@@ -12,6 +12,6 @@ export const cli = async(args:string[]) => {
     }
     
     await c.promptOptions()
-
+    await c.createProject()
     console.log(c);    
 }
