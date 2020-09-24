@@ -9,15 +9,16 @@ import fs from 'fs'
 import { join } from 'path'
 import { promisify } from 'util'
 import { projectInstall } from 'pkg-install'
+import GitPush from './git'
 
 interface Ioptions {
-    name:string
-    help:boolean
-    version:boolean
+
+    name:string       
     git:boolean
     typescript:boolean
     runInstall:boolean
     template ?:string
+   
 }
 
 const access = promisify(fs.access)
@@ -26,17 +27,24 @@ const copyDir = promisify(ncp)
 class Cli { 
 
     version : string
-    options!: Ioptions    
+    options !: Ioptions    
     projectPath !: string
 
-    #argv:{[propName:string]:any} = {
+    #argv : {[propName:string]:any} = {
         '--name':String,
         '--help':Boolean,
         '--version':Boolean,
         '--git':Boolean,
         '--typescript':Boolean,        
-        '--install':Boolean,        
+        '--install':Boolean,      
+        '--push':Boolean,  
+        '--remote':String,
+       
+        '--branch':String,
 
+
+        '-b':'--branch',
+        '-p':'--push',       
         '-n':'--name',
         '-v':'--version',
         '-h':'--help',
@@ -48,22 +56,32 @@ class Cli {
     #templatesPath = join(new URL(import.meta.url).pathname.slice(1),'../../templates')
 
     constructor(args:string[]){
-        this.version = require('../package.json').version
-        this.parseArgsIntoOptions(args)
+        this.version = require('../package.json').version 
+        this.parseArgsIntoOptions(args)       
     }
    
-    parseArgsIntoOptions(rawArgs:string[]){
-        const args = arg(this.#argv,{ argv:rawArgs.splice(2) })        
+    async parseArgsIntoOptions(rawArgs:string[]){
+        const args = arg(this.#argv,{ argv:rawArgs.splice(2) })  
+
+        if(args["--version"]){
+            this.showVersion()
+        }   
+
+        if(args["--help"]){
+            this.help()
+        }
+
+        if(args["--push"]){
+            new GitPush(rawArgs) 
+        }
+         
         this.options =  {
             name:args._[0] ?? args["--name"],
-            typescript:args["--typescript"] ?? true,
-            help:args["--help"] ?? false,
-            version:args["--version"] ?? false,
+            typescript:args["--typescript"] ?? true,           
             git:args["--git"] ?? false,        
-            runInstall:args["--install"] ?? false,        
+            runInstall:args["--install"] ?? false,   
         }
     }
-
     
     showVersion () {
         console.log(chalk`Version： {bold.green ${this.version} } `)
@@ -75,8 +93,10 @@ class Cli {
         Version  ${this.version}
         Syntax   k-cli <name> [...options]
         Examples k-cli 
-                    k-cli my-app -t
-                    k-cli -n my-app -t
+                 k-cli my-app -t
+                 k-cli -n my-app -t
+
+                 k-cli -p -m 提交的内容
         Options:
             -h, --help                      帮助，打印出这一段信息
             -v, --version                   版本号
@@ -84,6 +104,10 @@ class Cli {
             -t, --typescript                是否使用typescript，默认true，设置成false也没有用
             -g, --git                       git init
             -i, --install                   npm install
+
+            -p, --push                      git push           
+            -r, --remote                    git remote 默认 origin
+            -b, --branch                    git 的分支名称 默认 master
         `)
         process.exit(1)
     }
