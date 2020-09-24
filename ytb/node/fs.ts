@@ -98,7 +98,7 @@ const open = async (path) => {
         console.log('打开文件夹成功');
         for await (const dirent of res) {
             try {
-                const op  = await fs.open(path + '/' + dirent.name)
+                const op  = await fs.open(path + '/' + dirent.name,'')
                 console.log(`打开文件${dirent.name}成功`, op);
             } catch (error) {
                 console.error(`打开文件${dirent.name}失败`, error);
