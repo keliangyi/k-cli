@@ -38,12 +38,12 @@ class Cli {
         '--typescript':Boolean,        
         '--install':Boolean,      
         '--push':Boolean,  
-        '--remote':String,
-       
+        '--remote':String,       
         '--branch':String,
 
 
         '-b':'--branch',
+        '-r':'--remote',
         '-p':'--push',       
         '-n':'--name',
         '-v':'--version',
@@ -57,10 +57,18 @@ class Cli {
 
     constructor(args:string[]){
         this.version = require('../package.json').version 
-        this.parseArgsIntoOptions(args)       
+        const gitpush = this.parseArgsIntoOptions(args) 
+        if(!gitpush){
+            this.initCli()
+        }        
+    }
+
+    async initCli () {
+        await this.promptOptions()
+        await this.createProject()
     }
    
-    async parseArgsIntoOptions(rawArgs:string[]){
+    parseArgsIntoOptions(rawArgs:string[]):boolean{
         const args = arg(this.#argv,{ argv:rawArgs.splice(2) })  
 
         if(args["--version"]){
@@ -72,7 +80,8 @@ class Cli {
         }
 
         if(args["--push"]){
-            new GitPush(rawArgs) 
+            new GitPush(args) 
+            return true
         }
          
         this.options =  {
@@ -81,6 +90,7 @@ class Cli {
             git:args["--git"] ?? false,        
             runInstall:args["--install"] ?? false,   
         }
+        return false
     }
     
     showVersion () {
