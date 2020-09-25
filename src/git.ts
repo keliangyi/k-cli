@@ -15,6 +15,8 @@ class GitPush {
     argv: arg.Result<{ [propName: string]: any }>
     options !: IGitOPtions
 
+    #maxTypeLen:number = Object.keys(GitPush.commitTypes).reduce((acc,cur) => (acc.length > cur.length) ? acc : cur ).length
+
     static commitTypes = {
         feat: {
             "description": "A new feature",
@@ -68,8 +70,10 @@ class GitPush {
         }, 
     }
 
+
     constructor(args: arg.Result<{ [propName: string]: any }>) {
         this.argv = args
+     
         this.initGit()
     }
 
@@ -95,7 +99,7 @@ class GitPush {
             {
                 name:"commit-type",
                 type: 'rawlist',
-                choices: Object.entries(GitPush.commitTypes).map(([ key, val ])=>({ name: `${val.emoji} ${val.value}               ${val.description}`, value:key }))
+                choices: Object.entries(GitPush.commitTypes).map(([ key, val ])=>({ name: `${val.emoji} ${val.value.padEnd(this.#maxTypeLen,)}  ${val.description}`, value:key }))
             },
             {
                 name:"commit-message",                
